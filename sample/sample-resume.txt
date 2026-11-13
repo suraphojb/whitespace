@@ -1,0 +1,23 @@
+ALEX MORGAN
+New York, NY | alex.morgan@example.com | (555) 010-0142
+
+EDUCATION
+Columbia Business School, New York, NY - MBA, Class of 2027
+• Member, Venture Capital Club and Fintech Club; VP of Treks, Entrepreneurship Society
+University of Michigan, Ann Arbor, MI - B.A. Economics, 2019
+
+EXPERIENCE
+Northgate Payments, New York, NY - Senior Associate, Strategy & Partnerships, 2022 - 2025
+• Led cross-functional launch of a B2B payments product into two new markets (Singapore and Mexico), reaching $4M ARR in 12 months
+• Negotiated and signed 6 bank and platform partnerships that cut merchant onboarding time by 35%
+• Built the financial model and board materials for a $40M Series C fundraise alongside the CFO
+• Created a weekly KPI dashboard in SQL and Tableau used by the executive team to set OKRs
+
+Halvorsen Consulting Group, Chicago, IL - Business Analyst, then Consultant, 2019 - 2022
+• Advised financial services and SaaS clients on growth strategy, pricing and go-to-market across 9 engagements in 3 countries
+• Ran customer segmentation and market research for a fintech client that reshaped its pricing, lifting conversion 18%
+• Managed workstreams of 3 analysts and presented recommendations to C-suite stakeholders
+
+ADDITIONAL
+• Languages: English (native), Spanish (fluent)
+• Skills: SQL, Python, Excel financial modeling, Tableau

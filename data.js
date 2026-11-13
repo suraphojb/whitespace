@@ -1,0 +1,254 @@
+/* Whitespace — dataset.
+   STARTUPS are real companies; see the note above the list for sourcing and caveats.
+   ROLES holds the stage benchmarks ("prior"): our playbook estimate of how many startups
+   have a dedicated owner for each function at each stage. They are estimates, not survey data. */
+
+const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Series C"];
+
+/* Functions an MBA hire typically fills.
+   prior  = share of startups that typically have the function at each stage (playbook prior),
+            used to smooth the peer comparison when few comparables exist.
+   kw     = resume keywords (regex fragments) and weights.
+   musts  = things a founder will probe for; flagged when the resume doesn't show them. */
+const ROLES = {
+  cos: {
+    label: "Chief of Staff / BizOps",
+    titles: ["Founder's Associate / Founding BizOps", "Chief of Staff", "Director of Strategy & BizOps"],
+    prior: [0.05, 0.2, 0.55, 0.75, 0.8],
+    kw: { "chief of staff": 3, "consult": 2, "strategy": 2, "strategic": 1, "cross-functional": 2, "stakeholder": 1, "special projects": 2, "okr": 2, "executive": 1, "c-suite": 1, "board": 1, "mckinsey|bain\\b|bcg|boston consulting": 2, "business operations|bizops": 3, "transformation": 1, "operating model": 1 },
+    why: "At this stage every cross-team decision still routes through the CEO. Comparable companies add a strategy / BizOps generalist to unblock the founder before the next raise.",
+    angle: "Pitch yourself as leverage for {ceo}: the person who takes the messiest cross-functional problems off the founder's plate and turns them into an operating cadence.",
+    plan: ["Map the five decisions currently stuck on the CEO and own two of them", "Stand up a weekly metrics and OKR cadence the board can read", "Run one special project end to end (pricing, fundraise prep or a new segment)"],
+    musts: [["hands-on operating experience, not only advisory work", "operat|launched|built|owned|managed a team"], ["working directly with founders or executives", "founder|ceo|executive|c-suite|board"]]
+  },
+  pm: {
+    label: "Product Management",
+    titles: ["Founding Product Manager", "First Product Manager", "Senior Product Manager"],
+    prior: [0.05, 0.3, 0.75, 0.95, 1],
+    kw: { "product manage": 3, "roadmap": 2, "user research": 2, "agile": 1, "feature": 1, "a\\/b": 1, "ux\\b": 1, "engineer": 1, "product": 1, "scrum": 1, "wirefram|prototyp": 1, "shipped": 1 },
+    why: "Founders usually hold the roadmap until about this stage; then customer requests outpace what they can prioritise.",
+    angle: "Pitch that you can take the roadmap off the founders without slowing engineering: you translate customer pain into shipped, measured features.",
+    plan: ["Interview 15 customers and publish the top unmet needs", "Turn the backlog into a ranked roadmap with success metrics", "Ship one scoped feature and report its impact"],
+    musts: [["shipping product with engineers", "engineer|shipped|roadmap|agile|sprint"], ["user research or experimentation", "user research|a\\/b|experiment|interview|usability"]]
+  },
+  growth: {
+    label: "Growth",
+    titles: ["Founding Growth Lead", "Head of Growth", "Director of Growth"],
+    prior: [0.1, 0.4, 0.7, 0.9, 0.95],
+    kw: { "growth": 2, "marketing": 2, "\\bcac\\b": 2, "funnel": 2, "seo\\b": 2, "paid (social|media|search)": 2, "campaign": 1, "conversion": 1, "retention": 1, "lifecycle": 1, "performance marketing": 3, "referral": 1, "viral": 1, "user acquisition": 2 },
+    why: "Early traction is usually founder- or referral-driven. Comparable companies hire a growth owner once a repeatable channel has to be found and scaled.",
+    angle: "Pitch a channel thesis, not a job title: show you can find one scalable acquisition loop and prove its unit economics.",
+    plan: ["Audit the funnel and size the three biggest leaks", "Run a six-week test plan across two new channels", "Build the CAC / LTV model that says where the next dollar goes"],
+    musts: [["hands-on channel execution", "campaign|seo\\b|paid|\\bads\\b|email|lifecycle|content"], ["quantified growth results", "\\d+%|\\dx\\b|\\bcac\\b|\\bltv\\b|conversion"]]
+  },
+  pmm: {
+    label: "Product Marketing",
+    titles: ["Founding Marketer (Positioning & Launch)", "First Product Marketing Manager", "Head of Product Marketing"],
+    prior: [0, 0.1, 0.45, 0.8, 0.95],
+    kw: { "product marketing": 3, "positioning": 2, "messaging": 2, "go-to-market|gtm\\b": 2, "launch": 1, "brand": 1, "competitive": 1, "pricing": 2, "market research": 2, "segmentation": 2, "customer insight": 1 },
+    why: "Once sales moves beyond the founders' network, the story has to work without a founder in the room.",
+    angle: "Pitch that you'll make the product easier to buy: sharper positioning, a clear ideal customer, and launches sales can actually use.",
+    plan: ["Interview recent wins and losses; rewrite positioning and ideal customer profile", "Build the core sales deck, pricing page and competitive battlecards", "Run the next launch end to end against a pipeline target"],
+    musts: [["positioning or messaging work", "position|messag|brand|narrative"], ["pricing or competitive analysis", "pricing|competit|market research|segment"]]
+  },
+  bd: {
+    label: "Partnerships & BD",
+    titles: ["Founding Partnerships Lead", "Head of Partnerships", "Director of Business Development"],
+    prior: [0.05, 0.25, 0.55, 0.75, 0.85],
+    kw: { "partnership": 3, "business development": 3, "negotiat": 2, "alliance": 2, "deal": 1, "channel": 1, "relationship": 1, "ecosystem": 1, "commercial": 1 },
+    why: "Growth at this stage often hinges on one or two distribution or ecosystem partners that nobody owns yet.",
+    angle: "Pitch a specific partner map: name the three partnerships that would change {co}'s trajectory and show you've closed deals like them.",
+    plan: ["Rank the partner landscape by revenue impact and effort", "Open and progress conversations with the top five targets", "Close one lighthouse partnership with a joint launch"],
+    musts: [["closing or negotiating deals", "negotiat|closed|signed|deal|contract"], ["managing external partners", "partner|alliance|channel|vendor"]]
+  },
+  sales: {
+    label: "Sales",
+    titles: ["Founding Account Executive", "Sales Lead", "Director of Sales"],
+    prior: [0.05, 0.3, 0.75, 0.95, 1],
+    kw: { "sales": 2, "quota": 3, "pipeline": 2, "revenue": 1, "account executive": 3, "closed": 1, "enterprise": 1, "prospect": 2, "client": 1, "cold (call|outreach)": 2 },
+    why: "Founder-led sales tops out. Comparable companies bring in a first dedicated seller to prove the motion is repeatable before hiring a team.",
+    angle: "Pitch that you can turn founder-led selling into a playbook: you'll carry a number and document what works.",
+    plan: ["Shadow founder calls and codify the sales playbook", "Own a segment of the pipeline with a personal quota", "Define ideal customer, stages and conversion benchmarks for the next hire"],
+    musts: [["carrying a quota or revenue target", "quota|revenue target|closed|pipeline"], ["direct client-facing selling", "sales|sold|prospect"]]
+  },
+  cs: {
+    label: "Customer Success",
+    titles: ["Founding Customer Success Lead", "Head of Customer Success", "Director of Customer Success"],
+    prior: [0, 0.15, 0.6, 0.9, 1],
+    kw: { "customer success": 3, "account manage": 3, "onboarding": 2, "renewal": 2, "churn": 2, "nps\\b": 2, "implementation": 1, "client": 1, "retention": 1, "customer experience": 2 },
+    why: "As contracts grow, renewals and expansion become the cheapest revenue available, and nobody owns them yet.",
+    angle: "Pitch net revenue retention: you'll own onboarding and renewals so the founders stop firefighting accounts.",
+    plan: ["Segment accounts by health and renewal date", "Design a repeatable onboarding with time-to-value targets", "Run the first business reviews and surface two expansion deals"],
+    musts: [["managing client relationships", "client|customer|account"], ["retention or renewal metrics", "retention|renewal|churn|nps\\b|satisfaction"]]
+  },
+  fin: {
+    label: "Finance & FP&A",
+    titles: ["Finance & Ops Generalist", "First Finance Hire / Head of Finance", "Director of FP&A"],
+    prior: [0, 0.1, 0.45, 0.85, 1],
+    kw: { "financial model": 3, "fp&a": 3, "investment bank": 3, "valuation": 2, "budget": 2, "forecast": 2, "accounting": 1, "cfa\\b|cpa\\b": 2, "m&a": 1, "private equity": 2, "dcf\\b": 2, "fundrais": 2, "p&l": 2, "venture capital": 1 },
+    why: "After this round the board expects a real budget, forecast and runway model. Founders plus an outsourced bookkeeper no longer cut it.",
+    angle: "Pitch that you'll give {ceo} a financial cockpit: a forecast investors trust and unit economics that guide decisions.",
+    plan: ["Rebuild the operating model and monthly board pack", "Establish budget-versus-actuals with each team lead", "Own the data room and modelling for the next raise"],
+    musts: [["financial modelling", "financial model|forecast|valuation|dcf\\b|budget|fp&a"], ["working with investors or boards", "investor|board|fundrais|due diligence|private equity|venture"]]
+  },
+  revops: {
+    label: "Revenue Operations",
+    titles: ["GTM Operations Generalist", "Revenue Operations Lead", "Head of Revenue Operations"],
+    prior: [0, 0.05, 0.3, 0.7, 0.9],
+    kw: { "revenue operations|revops|sales operations": 3, "salesforce|hubspot": 2, "crm\\b": 2, "forecast": 1, "pipeline": 1, "pricing": 1, "compensation": 1, "go-to-market|gtm\\b": 1, "analytics": 1 },
+    why: "With several sellers and channels, forecast accuracy and funnel hygiene start to limit growth.",
+    angle: "Pitch predictability: you'll make the revenue engine measurable, with a clean pipeline, a trusted forecast and clear incentives.",
+    plan: ["Audit CRM data and define funnel stages everyone uses", "Ship a weekly forecast leadership trusts", "Redesign territories or comp for the next sales hires"],
+    musts: [["CRM or pipeline tooling", "salesforce|hubspot|crm\\b|pipeline"], ["analytical forecasting", "forecast|analytic|sql\\b|model"]]
+  },
+  exp: {
+    label: "Market Expansion",
+    titles: ["Launch Lead", "Expansion Lead / Launcher", "General Manager, New Markets"],
+    prior: [0, 0, 0.2, 0.55, 0.8],
+    kw: { "international": 2, "expansion": 2, "market entry": 3, "global": 1, "cross-border": 2, "emerging market": 2, "new market": 3, "asia|latin america|latam|europe|emea|apac": 1, "fluent|bilingual": 1, "launch": 1, "general manager": 2, "countr": 1 },
+    why: "New geographies or segments need a single owner. Comparable companies appoint a launcher or GM rather than stretching headquarters teams.",
+    angle: "Pitch yourself as the launcher: someone who can land in a new market, build the playbook and hand it over.",
+    plan: ["Size and rank candidate markets with entry requirements", "Stand up the first market: local partners, pricing, first customers", "Write the launch playbook for markets two and three"],
+    musts: [["international or multi-market experience", "international|global|cross-border|countr|region|asia|europe|latin|emerging"], ["launching something from zero", "launch|founded|established|opened|pilot"]]
+  },
+  ops: {
+    label: "Operations",
+    titles: ["Founding Operations Lead", "Head of Operations", "Director of Operations"],
+    prior: [0.1, 0.3, 0.6, 0.8, 0.9],
+    kw: { "operations": 2, "process": 1, "supply chain": 2, "logistics": 2, "efficien": 1, "lean\\b|six sigma": 2, "vendor": 1, "fulfil": 2, "procurement": 1, "streamlin": 1, "automat": 1, "sla\\b": 1 },
+    why: "Delivery complexity is growing faster than headcount. Comparable companies add an operations owner to keep quality and margins intact.",
+    angle: "Pitch margin and reliability: you'll make the core operation scale without quality slipping.",
+    plan: ["Map the core process and its failure points", "Set service levels and a weekly operations dashboard", "Automate or outsource the two costliest manual steps"],
+    musts: [["process improvement", "process|efficien|streamlin|automat|lean\\b|six sigma"], ["operational metrics", "sla\\b|cost|margin|throughput|on-time"]]
+  },
+  data: {
+    label: "Analytics & Insights",
+    titles: ["Founding Analyst", "Analytics Lead", "Head of Strategy & Analytics"],
+    prior: [0, 0.1, 0.4, 0.75, 0.9],
+    kw: { "sql\\b": 3, "python": 2, "analytics": 2, "tableau|looker|power bi": 2, "dashboard": 1, "statistic": 2, "experimentation|a\\/b": 1, "data": 1, "regression|machine learning": 1 },
+    why: "Decisions are still made on founder intuition and ad-hoc spreadsheets. Comparable companies add an analytics owner once there is enough data to matter.",
+    angle: "Pitch faster, better decisions: you'll be the person who answers \"what is actually working?\" with evidence.",
+    plan: ["Define the ten metrics that run the company", "Build self-serve dashboards for each team", "Deliver one analysis that changes a roadmap or budget decision"],
+    musts: [["hands-on data tools", "sql\\b|python|tableau|looker|excel"], ["analysis that drove a decision", "analy|insight|dashboard|experiment"]]
+  },
+  people: {
+    label: "People & Talent",
+    titles: ["Founding Recruiter / People Generalist", "Head of People", "Director of People & Talent"],
+    prior: [0, 0.05, 0.35, 0.8, 0.95],
+    kw: { "recruit": 2, "talent": 2, "human resources|hr\\b": 3, "people operations": 3, "culture": 1, "hiring": 1, "training": 1, "organizational": 1, "diversity": 1 },
+    why: "Headcount is about to double. Comparable companies add a people owner before hiring quality and culture start to drift.",
+    angle: "Pitch hiring velocity and quality: you'll build the machine that lets {co} double without lowering the bar.",
+    plan: ["Build the hiring plan and a structured interview process", "Fill the three most urgent roles", "Introduce lightweight performance and onboarding programmes"],
+    musts: [["recruiting", "recruit|hiring|talent"], ["people programmes", "culture|training|onboarding|performance review|organizational"]]
+  },
+  corpdev: {
+    label: "Corporate Development",
+    titles: ["Strategic Finance Generalist", "Strategic Finance & Corp Dev Lead", "Head of Corporate Development"],
+    prior: [0, 0, 0.05, 0.3, 0.65],
+    kw: { "m&a": 3, "acquisition": 1, "due diligence": 2, "investment bank": 2, "private equity": 2, "venture capital": 2, "deal": 1, "valuation": 1, "integration": 1, "investor relations": 3, "corporate development": 3 },
+    why: "At this scale inorganic growth and investor relations become continuous work rather than one-off projects.",
+    angle: "Pitch disciplined deal-making: you'll build the acquisition pipeline and run diligence so {ceo} doesn't have to.",
+    plan: ["Build and rank an acquisition target list against strategy", "Run diligence and modelling on the top two targets", "Own integration planning and investor reporting"],
+    musts: [["transaction experience", "m&a|acquisition|due diligence|transaction|deal"], ["valuation skills", "valuation|dcf\\b|financial model|lbo\\b"]]
+  }
+};
+
+/* Sector groups used to find similar startups. `color` drives the UI accent. */
+const MODELS = {
+  "B2B SaaS": { color: "#5b5bf0", kw: { "saas": 3, "enterprise software": 2, "b2b": 2, "software": 1, "subscription": 1, "crm\\b": 1, "cloud": 1 }, skip: [] },
+  "Fintech": { color: "#0e9f6e", kw: { "fintech": 3, "bank": 2, "payment": 2, "investment": 1, "private equity": 1, "credit": 1, "lending": 2, "insurance": 2, "financial services": 2, "wealth|asset management": 1, "capital markets": 1 }, skip: [] },
+  "Healthtech": { color: "#e5487a", kw: { "health": 2, "hospital": 2, "pharma": 2, "biotech": 2, "clinical": 2, "medical": 1, "patient": 2, "payer": 1, "life sciences": 2 }, skip: [] },
+  "AI & Dev Tools": { color: "#9b4dff", kw: { "ai\\b|artificial intelligence": 3, "machine learning|ml\\b": 2, "llm": 3, "developer": 2, "api\\b": 2, "cloud": 1, "data science": 1, "software engineer": 2, "python": 1 }, skip: [] },
+  "Climate & Energy": { color: "#0aa5b5", kw: { "climate": 3, "energy": 2, "sustainab": 2, "renewable": 2, "solar": 1, "ev\\b|electric vehicle": 2, "carbon": 2, "esg\\b": 2, "cleantech": 3, "infrastructure": 1, "utilit": 1 }, skip: [] },
+  "Marketplace & Commerce": { color: "#f2711c", kw: { "marketplace": 3, "e-?commerce": 2, "consumer": 2, "retail": 2, "supply chain": 1, "logistics": 1, "two-sided": 2, "cpg\\b": 2, "brand": 1, "dtc\\b|direct-to-consumer": 2, "platform": 1 }, skip: [] }
+};
+
+/* REAL startups. Facts come from press coverage of each company's latest funding round,
+   checked in November 2026; `src` is the main article. Things to know:
+   - employees: often undisclosed. "est." values are third-party job-board bands, not company figures.
+   - has: only functions with a publicly named owner we came across. Team rosters are not public
+     in structured form, so every inferred gap is a hypothesis to verify (the UI links to LinkedIn).
+   - signal: a fact from the announcement; which role it points to is our inference.
+   - web: company website; each address was loaded and its page title checked (levanta.io blocks automated checks).
+   - unsure: fields where sources disagreed or nothing was found. */
+const AS_OF = "November 2026";
+const STARTUPS = [
+  // ── B2B SaaS
+  { id: "flai", web: "https://www.useflai.com/", name: "Flai", model: "B2B SaaS", stage: 2, raised: "$33M", round: "$27M Series A · Oct 2026", employees: "Not disclosed", empN: null, location: "United States (HQ not confirmed)", city: null, ceo: "Ari Polakof", founded: "2025", blurb: "AI-native CRM that handles calls, texts and appointment booking for car dealerships.", has: [], signal: { role: "cs", text: "Works with more than 10 of the 50 largest US dealer groups and is hiring across the team after its Series A.", you: "you now serve more than 10 of the 50 largest US dealer groups" }, tags: "automotive|dealership|crm\\b", src: "https://www.thesaasnews.com/news/flai-raises-27m-series-a/", unsure: ["Headquarters and headcount were not in the coverage we found."] },
+  { id: "procuros", web: "https://procuros.io/", name: "Procuros", model: "B2B SaaS", stage: 2, raised: "≈€34M", round: "€20M Series A · Oct 2026", employees: "11–50 (est., may be dated)", empN: 40, location: "Hamburg, Germany", city: "Hamburg", ceo: "Patrick Thelen", founded: "2021", blurb: "Network that lets retailers, suppliers and AI agents exchange orders, invoices and trade data.", has: [], signal: { role: "bd", text: "Raised its Series A to push 'autonomous B2B trade' across retailer and supplier networks.", you: "you're scaling the retailer and supplier network after the Series A" }, tags: "supply chain|retail|edi\\b|procurement|wholesale", src: "https://tech.eu/2026/10/06/autonomous-b2b-trade-gets-a-boost-as-procuros-raises-eur20m/", unsure: [] },
+  { id: "siena", web: "https://www.siena.cx/", name: "Siena AI", model: "B2B SaaS", stage: 2, raised: "$29.7M", round: "$17M Series A · Oct 2026", employees: "11–50 (est.)", empN: 35, location: "New York, NY", city: "New York", ceo: "Andrei Negrău (co-founder)", founded: "2023", blurb: "AI customer-experience agents for consumer brands.", has: [], signal: { role: "pmm", text: "Repositioning from AI customer service to an 'agent of record' for consumer brands.", you: "you're repositioning Siena as the agent of record for consumer brands" }, tags: "customer service|customer experience|e-?commerce|consumer brand", src: "https://pulse2.com/siena-raises-17-million-series-a-bringing-total-funding-to-29-7-million/", unsure: ["Coverage names the co-founders but not who holds the CEO title.", "One database lists San Francisco as HQ."] },
+  { id: "symbe", web: "https://www.symbe.co/", name: "Symbe", model: "B2B SaaS", stage: 1, raised: "≈£5.5M", round: "£4.3M Seed · Oct 2026", employees: "1–10 (est., may be dated)", empN: 10, location: "London, UK", city: "London", ceo: "Martin Blinder (as of 2024)", founded: "—", blurb: "AI platform that builds the business case for B2B sales deals.", has: [], signal: { role: "sales", text: "Closed its seed round to expand the platform beyond early customers.", you: "you've just closed the seed round to expand beyond early customers" }, tags: "business case|value selling|sales enablement", src: "https://www.startupmag.co.uk/funding/symbe-2026-seed-funding/", unsure: ["Another source reports the seed as $5.7M.", "CEO is from a 2024 release and may have changed."] },
+  { id: "sumble", web: "https://sumble.com/", name: "Sumble", model: "B2B SaaS", stage: 2, raised: "$38.5M", round: "$30M Series A · Oct 2025", employees: "Not disclosed", empN: null, location: "San Francisco, CA", city: "San Francisco", ceo: "Anthony Goldbloom (co-founder)", founded: "2022", blurb: "Sales intelligence built on technical context about target accounts, from the founders of Kaggle.", has: [], signal: { role: "growth", text: "Said its funding would go to engineering and data teams, leaving go-to-market comparatively thin.", you: "the funding is going mostly into engineering and data" }, tags: "sales intelligence|go-to-market|data provider", src: "https://siliconangle.com/2025/10/22/sumble-launches-38-5m-expand-ai-powered-go-market-intelligence-platform", unsure: ["Coverage names the co-founders but not who holds the CEO title."] },
+
+  // ── Fintech
+  { id: "slingshot", web: "https://www.slingshotinsurance.com/", name: "Slingshot Insurance", model: "Fintech", stage: 1, raised: "$27M", round: "$27M Seed · Oct 2026", employees: "Not disclosed", empN: null, location: "Minneapolis, MN", city: "Minneapolis", ceo: "Ethan Genteman", founded: "—", blurb: "Technology and insurance capacity for embedded policies sold at checkout.", has: [], signal: { role: "bd", text: "Just emerged from stealth and sells through MGAs, software platforms and distributors.", you: "you've just come out of stealth and distribution runs through MGAs and software platforms" }, tags: "insurance|insurtech|actuar|underwriting", src: "https://runtimewire.com/article/slingshot-27m-seed-embedded-insurance", unsure: ["Headcount and founding year were not in the coverage we found."] },
+  { id: "yuzu", web: "https://yuzu.health/", name: "Yuzu Health", model: "Fintech", stage: 2, raised: "$40M", round: "$35M Series A · Apr 2026", employees: "Not disclosed", empN: null, location: "New York, NY", city: "New York", ceo: "Max Kauderer", founded: "2022 (unconfirmed)", blurb: "Health-plan infrastructure: claims, payments and member administration for insurers, brokers and employers.", has: [], signal: { role: "ops", text: "Runs claims and member administration itself as a third-party administrator, so operations scale with every new plan.", you: "every new plan adds claims and member-admin volume" }, tags: "health plan|benefits|claims|insurance|tpa\\b", src: "https://medcitynews.com/2026/04/tpa-yuzu-health-aims-to-revamp-health-benefits-with-35m-boost/", unsure: ["Founding year comes from a single profile."] },
+  { id: "equipifi", web: "https://www.equipifi.com/", name: "equipifi", model: "Fintech", stage: 3, raised: "$49M", round: "$34M Series B · May 2026", employees: "Not disclosed", empN: null, location: "Scottsdale, AZ", city: "Scottsdale", ceo: "Bryce Deeney", founded: "—", blurb: "Buy-now-pay-later that banks and credit unions offer inside their own apps.", has: [], signal: { role: "cos", text: "Expects to double headcount within a year while adding more bank and credit-union partners.", you: "you expect to double headcount this year" }, tags: "bnpl|buy now|credit union|bank", src: "https://fintech.global/2026/05/19/equipifi-raises-34m-series-b-to-expand-bank-native-bnpl/", unsure: ["Current headcount and founding year were not in the coverage we found."] },
+  { id: "splitpay", web: "https://splitpay.com/", name: "Split Pay", model: "Fintech", stage: 3, raised: "≈$140M", round: "$100M Series B · Sep 2026", employees: "Not disclosed", empN: null, location: "Miami, FL", city: "Miami", ceo: "Andrew Borovsky", founded: "—", blurb: "Pays rent and other big household bills on time; members repay in two instalments.", has: [], signal: { role: "growth", text: "The CEO said the new money would 'supercharge customer acquisition'; it serves over 150,000 members.", you: "the round is earmarked for customer acquisition" }, tags: "bnpl|rent|consumer lending|mortgage", src: "https://www.axios.com/2026/09/08/split-pay-khosla-125-million", unsure: ["Headcount was not in the coverage we found."] },
+
+  // ── Healthtech
+  { id: "vitalize", web: "https://vitalize.care/", name: "Vitalize", model: "Healthtech", stage: 2, raised: "$31M+", round: "$31M Series A · Oct 2026", employees: "51–200 (est.)", empN: 90, location: "San Francisco, CA", city: "San Francisco", ceo: "Veeraj Shah", founded: "—", blurb: "AI operating system for hospital staffing and scheduling.", has: ["pm"], signal: { role: "cs", text: "Works with more than 15 health systems on multi-year enterprise contracts.", you: "you have more than 15 health systems on multi-year contracts" }, tags: "hospital|staffing|nurs|workforce|health system", src: "https://www.fiercehealthcare.com/health-tech/vitalize-secures-31m-scale-ai-powered-operating-system-hospital-staffing-and-scheduling", unsure: ["Total funding before this round was not stated."] },
+  { id: "doctronic", web: "https://www.doctronic.ai/", name: "Doctronic", model: "Healthtech", stage: 3, raised: "$65M", round: "$40M Series B · Mar 2026", employees: "51–200 (est.)", empN: 100, location: "New York, NY", city: "New York", ceo: "Matt Pavelle (co-CEO)", founded: "2023", blurb: "AI doctor for 24/7 visits and prescription renewals, backed by human clinicians.", has: [], signal: { role: "cos", text: "Acquired Summer Health to add paediatrics after raising three rounds in under a year.", you: "you've raised three rounds in a year and just acquired Summer Health" }, tags: "telehealth|primary care|prescription|virtual care", src: "https://www.axios.com/pro/health-tech-deals/2026/03/23/doctronic-40m-ai-telemedicine", unsure: [] },
+  { id: "9am", web: "https://9am.health/", name: "9amHealth", model: "Healthtech", stage: 3, raised: "$30–55M (sources differ)", round: "$26M Series B · May 2026", employees: "≈160 (Dealroom)", empN: 160, location: "Encinitas, CA (San Diego area)", city: "San Diego", ceo: "Frank Westermann", founded: "2021", blurb: "Virtual specialty care for cardiometabolic conditions, sold to employers.", has: [], signal: { role: "pmm", text: "Expanding from cardiometabolic care into the wider set of chronic conditions that drive employer pharmacy spend.", you: "you're expanding beyond cardiometabolic into broader chronic conditions" }, tags: "diabetes|chronic|employer|pharmacy|virtual care", src: "https://hitconsultant.net/2026/05/13/9amhealth-raises-26m-series-b-virtual-specialty-care/", unsure: ["Total funding is reported anywhere from about $30M to $55M.", "Headcount estimates range widely."] },
+  { id: "bunkerhill", web: "https://bunkerhillhealth.com/", name: "Bunkerhill Health", model: "Healthtech", stage: 3, raised: "$55M", round: "$25M Series B · Jul 2026", employees: "Not disclosed", empN: null, location: "San Francisco Bay Area, CA", city: "San Francisco", ceo: "Nishith Khandwala (founder)", founded: "—", blurb: "Platform that lets hospitals build and run their own AI agents.", has: [], signal: { role: "cs", text: "Customers include Cleveland Clinic, Mayo Clinic and Intermountain Health.", you: "your customers now include Cleveland Clinic, Mayo Clinic and Intermountain" }, tags: "radiology|health system|clinical ai|hospital", src: "https://fortune.com/2026/07/16/bunkerhill-health-raises-55-million-ai-agents-work-inside-hospitals/", unsure: ["Reported as both Palo Alto and San Francisco.", "Coverage names the founder but not the CEO title."] },
+  { id: "lotus", web: "https://lotus.ai/", name: "Lotus Health", model: "Healthtech", stage: 2, raised: "$41M", round: "$35M Series A · Feb 2026", employees: "Not disclosed", empN: null, location: "San Francisco, CA (sources differ)", city: "San Francisco", ceo: "KJ Dhaliwal", founded: "—", blurb: "Free, AI-assisted primary care available around the clock in 50 languages.", has: [], signal: { role: "growth", text: "Plans to use the Series A to scale patient outreach alongside clinical operations.", you: "the Series A is meant to scale patient outreach" }, tags: "primary care|telehealth|consumer health", src: "https://techcrunch.com/2026/02/03/lotus-health-nabs-35m-for-ai-doctor-that-sees-patients-for-free/", unsure: ["HQ is listed as San Francisco by one source and Covina, CA by another."] },
+  { id: "salvo", web: "https://www.salvohealth.com/", name: "Salvo Health", model: "Healthtech", stage: 2, raised: "≈$21.6M", round: "$8.5M Series A · Jan 2026", employees: "11–200 (estimates differ)", empN: 50, location: "New York, NY", city: "New York", ceo: "Not confirmed", founded: "2021", blurb: "Hybrid care platform that gastroenterology practices use for continuous GI and metabolic care.", has: [], signal: { role: "bd", text: "Grows through partnerships with GI provider practices rather than selling direct to patients.", you: "growth runs through partnerships with GI practices" }, tags: "gastro|\\bgi\\b|chronic care|provider|metabolic", src: "https://pulse2.com/salvo-health-8-5-million-series-a/", unsure: ["We could not confirm the CEO from the coverage found.", "Total funding is reported between $17.5M and $28M."] },
+
+  // ── AI & Dev Tools
+  { id: "entire", web: "https://entire.io/", name: "Entire", model: "AI & Dev Tools", stage: 1, raised: "$60M", round: "$60M Seed · Feb 2026", employees: "Not disclosed", empN: null, location: "Seattle, WA (unconfirmed)", city: "Seattle", ceo: "Thomas Dohmke", founded: "—", blurb: "Developer platform for humans and AI agents to build software together, from GitHub's former CEO.", has: [], signal: { role: "pmm", text: "Shipped its first product, Checkpoints, and has to explain a new category to developers.", you: "you've shipped Checkpoints and are defining a new category" }, tags: "developer tool|open source|devops|github", src: "https://techcrunch.com/2026/02/10/former-github-ceo-raises-record-60m-dev-tool-seed-round-at-300m-valuation/", unsure: ["Seattle comes from a single third-party profile."] },
+  { id: "flatkey", web: "https://flatkey.ai/", name: "Flatkey", model: "AI & Dev Tools", stage: 2, raised: "$10M", round: "$10M Series A · Sep 2026", employees: "101–250 (reported, unverified)", empN: null, location: "San Jose, CA", city: "San Jose", ceo: "Not confirmed", founded: "2026", blurb: "One API key and one bill for 100+ official AI models and 1,000+ tools.", has: [], signal: { role: "bd", text: "Passed 10,000 developers in two months; the model depends on terms with AI model providers.", you: "you passed 10,000 developers in two months" }, tags: "api\\b|model routing|developer platform", src: "https://pulse2.com/flatkey-raises-10-million-series-a-after-surpassing-10000-developers/", unsure: ["Coverage does not name the CEO.", "The round was raised jointly with sister company Realset AI."] },
+  { id: "devplan", web: "https://devplan.com/", name: "Devplan", model: "AI & Dev Tools", stage: 1, raised: "$2.5M", round: "$2.5M Seed · Jun 2026", employees: "6", empN: 6, location: "Seattle, WA", city: "Seattle", ceo: "Chris Bee", founded: "2025", blurb: "Shared knowledge layer that keeps product and engineering teams aligned as AI writes more code.", has: [], signal: { role: "sales", text: "Seed money is going to engineering hires and integrations; the six-person team has no commercial hire yet.", you: "the seed is going into engineering and integrations" }, tags: "product management|roadmap|engineering team", src: "https://geekwire.com/2026/devplan-raises-2-5m-to-take-on-the-product-coordination-work-that-ai-coding-is-leaving-behind/", unsure: [] },
+  { id: "solveai", web: "https://solve.ai/", name: "SolveAI", model: "AI & Dev Tools", stage: 2, raised: "$50M", round: "$45M Series A · Feb 2026", employees: "11 (Fortune, Feb 2026)", empN: 11, location: "London, UK", city: "London", ceo: "Steve Basher", founded: "2025", blurb: "Lets non-engineers build enterprise software with orchestrated AI agents.", has: [], signal: { role: "cos", text: "Raised $50M within eight months of founding with only about eleven people.", you: "you raised $50M in eight months with a team of about eleven" }, tags: "enterprise software|low-code|palantir", src: "https://fortune.com/2026/02/25/exclusive-solveai-eight-months-raises-50-million-ai-coding-tool-race/", unsure: ["A later database lists 31 employees.", "One source lists San Francisco as HQ."] },
+
+  // ── Climate & Energy
+  { id: "moment", web: "https://www.momentenergy.com/", name: "Moment Energy", model: "Climate & Energy", stage: 3, raised: "$100M+", round: "$40M Series B · May 2026", employees: "Not disclosed", empN: null, location: "Coquitlam, BC (US base in Austin, TX)", city: "Vancouver", ceo: "Edward Chiang", founded: "2019", blurb: "Turns used EV batteries into grid and data-centre energy storage.", has: [], signal: { role: "ops", text: "Building what it calls the world's largest second-life battery factory, with manufacturing in the US and Canada.", you: "you're building the second-life battery factory and expanding manufacturing in two countries" }, tags: "battery|storage|\\bev\\b|manufactur|data cent", src: "https://techcrunch.com/2026/05/05/moment-energy-raises-40m-to-meet-infinite-demand-for-power-with-ev-batteries", unsure: ["Headcount was not in the coverage we found."] },
+  { id: "gridsight", web: "https://www.gridsight.ai/", name: "Gridsight", model: "Climate & Energy", stage: 3, raised: "≈$33M", round: "$26M Series B · Sep 2026", employees: "51–100 (est.)", empN: 75, location: "Sydney, Australia (US team in California)", city: "Sydney", ceo: "Brendan Banfield", founded: "2020", blurb: "Software that helps utilities find unused capacity on the distribution grid.", has: [], signal: { role: "pmm", text: "Expanding in the US with Xcel Energy and United Illuminating; a job board showed a 'Founding Head of Marketing' opening.", you: "you're expanding with US utilities and building marketing from scratch" }, tags: "utilit|grid|distribution network|energy", src: "https://www.latitudemedia.com/industry-news/gridsight-raises-26m-series-b-to-unlock-electric-grid-capacity-and-affordability/", unsure: ["No official US headquarters was confirmed."] },
+
+  // ── Marketplace & Commerce
+  { id: "highstock", web: "https://www.highstock.com/", name: "Highstock", model: "Marketplace & Commerce", stage: 2, raised: "$30M+", round: "$30M Series A · Sep 2026", employees: "11–50 (job-board band)", empN: 30, location: "New York, NY", city: "New York", ceo: "Camille van Horne", founded: "—", blurb: "B2B marketplace where brands sell excess inventory instead of destroying it.", has: [], signal: { role: "exp", text: "Expanding from beauty into apparel; its investor job board listed a 'Growth Lead, New Verticals' role.", you: "you're taking the marketplace from beauty into apparel" }, tags: "beauty|apparel|fashion|inventory|wholesale", src: "https://a16z.com/announcement/investing-in-highstock/", unsure: ["Total funding including the seed round was not confirmed."] },
+  { id: "buywander", web: "https://buywander.com/", name: "BuyWander", model: "Marketplace & Commerce", stage: 2, raised: "$28M", round: "$21M Series A · Sep 2026", employees: "Not disclosed", empN: null, location: "Seattle, WA", city: "Seattle", ceo: "Jordan Allen", founded: "2023", blurb: "Online auctions for returned and overstocked retail goods, picked up at local warehouses.", has: ["fin"], signal: { role: "ops", text: "Expanding nationwide from eight fulfilment locations and says it is building out its leadership team.", you: "you're going nationwide from eight fulfilment locations" }, tags: "returns|liquidation|auction|warehouse|fulfil", src: "https://geekwire.com/2026/buywander-raises-21m-as-retail-returns-startup-expands-nationwide-from-new-seattle-hq", unsure: ["One profile gives 2024 as the founding year."] },
+  { id: "fleek", web: "https://www.joinfleek.com/", name: "Fleek", model: "Marketplace & Commerce", stage: 3, raised: "≈$45M", round: "$25M Series B · Jul 2026", employees: "51–200 (est.)", empN: 100, location: "London, UK", city: "London", ceo: "Abhi Arora (co-founder)", founded: "2021", blurb: "Wholesale marketplace and AI tools for the global second-hand clothing supply chain.", has: [], signal: { role: "bd", text: "eBay joined the Series B alongside the lead investor that backed Vinted early.", you: "eBay has joined the cap table" }, tags: "secondhand|resale|fashion|wholesale|circular", src: "https://tech.eu/2026/07/08/fleek-secures-25m-to-digitise-secondhand-fashion/", unsure: ["Total funding is reported between about $45M and $60M.", "Coverage names the co-founders but not the CEO title."] },
+  { id: "levanta", web: "https://levanta.io/", name: "Levanta", model: "Marketplace & Commerce", stage: 3, raised: "$43M+", round: "$22M Series B · Aug 2026", employees: "11–50 (est.)", empN: 40, location: "Seattle, WA", city: "Seattle", ceo: "Not confirmed", founded: "—", blurb: "Creator affiliate platform connecting brands with 90,000+ vetted creators.", has: [], signal: { role: "bd", text: "Expanding beyond Amazon to Walmart, Shopify and other retail marketplaces; revenue grew 80% this year.", you: "you're expanding beyond Amazon to Walmart and Shopify" }, tags: "affiliate|creator|influencer|amazon|retail media", src: "https://geekwire.com/2026/as-the-influencer-economy-drives-sales-seattle-startup-raises-22m-to-play-matchmaker/", unsure: ["We could not confirm the CEO from the coverage found."] },
+  { id: "bidbus", web: "https://bidbus.com/", name: "Bidbus", model: "Marketplace & Commerce", stage: 2, raised: "$15M+", round: "$15M Series A · Jul 2026", employees: "11–50 (est.)", empN: 30, location: "Los Angeles, CA", city: "Los Angeles", ceo: "Duke Yan", founded: "2022", blurb: "Car owners sell to dealers who bid against each other in a live auction.", has: [], signal: { role: "exp", text: "Operates in California and Texas and raised its Series A to go nationwide.", you: "you're taking the marketplace beyond California and Texas" }, tags: "automotive|used car|dealer|auction", src: "https://bidbus.com/blog/post/our-15m-series-a-and-the-future-of-car-selling", unsure: ["Other listings give Irvine or Miami as HQ."] }
+];
+
+const CITIES = {
+  "New York": "new york|nyc|brooklyn|manhattan",
+  "San Francisco": "san francisco|bay area|palo alto|silicon valley",
+  "San Jose": "san jose|silicon valley",
+  "Seattle": "seattle|bellevue",
+  "London": "london",
+  "Miami": "miami",
+  "Los Angeles": "los angeles|santa monica",
+  "Minneapolis": "minneapolis",
+  "Scottsdale": "scottsdale|phoenix",
+  "San Diego": "san diego",
+  "Hamburg": "hamburg|germany",
+  "Sydney": "sydney|australia",
+  "Vancouver": "vancouver|austin"
+};
+
+const SAMPLE_RESUME = `ALEX MORGAN
+New York, NY | alex.morgan@example.com | (555) 010-0142
+
+EDUCATION
+Columbia Business School, New York, NY - MBA, Class of 2027
+• Member, Venture Capital Club and Fintech Club; VP of Treks, Entrepreneurship Society
+University of Michigan, Ann Arbor, MI - B.A. Economics, 2019
+
+EXPERIENCE
+Northgate Payments, New York, NY - Senior Associate, Strategy & Partnerships, 2022 - 2025
+• Led cross-functional launch of a B2B payments product into two new markets (Singapore and Mexico), reaching $4M ARR in 12 months
+• Negotiated and signed 6 bank and platform partnerships that cut merchant onboarding time by 35%
+• Built the financial model and board materials for a $40M Series C fundraise alongside the CFO
+• Created a weekly KPI dashboard in SQL and Tableau used by the executive team to set OKRs
+
+Halvorsen Consulting Group, Chicago, IL - Business Analyst, then Consultant, 2019 - 2022
+• Advised financial services and SaaS clients on growth strategy, pricing and go-to-market across 9 engagements in 3 countries
+• Ran customer segmentation and market research for a fintech client that reshaped its pricing, lifting conversion 18%
+• Managed workstreams of 3 analysts and presented recommendations to C-suite stakeholders
+
+ADDITIONAL
+• Languages: English (native), Spanish (fluent)
+• Skills: SQL, Python, Excel financial modeling, Tableau
+`;

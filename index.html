@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whitespace — roles startups haven't posted yet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<input type="file" id="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" hidden>
+
+<!-- Upload screen -->
+<main id="upload" class="upload" hidden>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="upload-inner">
+    <div class="brand big"><span class="mark"></span>Whitespace</div>
+    <h1>Find the startup role that <span class="grad">doesn't exist yet</span>.</h1>
+    <p class="lede">Drop your resume. We'll match you with real, recently funded startups, spot the role each one is missing, and write your pitch for it.</p>
+
+    <button id="drop" class="drop" type="button">
+      <span class="drop-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+      <strong>Drop your resume here</strong>
+      <span>or click to choose a file · PDF, Word or text</span>
+    </button>
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <div class="alt">
+      <button id="sample" class="pill" type="button">✨ Try a sample resume</button>
+      <button id="pasteToggle" class="pill ghost" type="button">Paste text instead</button>
+    </div>
+    <form id="pasteForm" class="paste" hidden>
+      <textarea id="pasteText" rows="8" placeholder="Paste your resume text…" aria-label="Resume text"></textarea>
+      <button class="btn primary" type="submit">Find my matches</button>
+    </form>
+
+    <ol class="steps">
+      <li><b>1</b><div><strong>Drop your resume</strong><span>That's the only thing we ask for.</span></div></li>
+      <li><b>2</b><div><strong>See your matches</strong><span>Startups ranked by fit, with the role they're missing.</span></div></li>
+      <li><b>3</b><div><strong>Send your pitch</strong><span>A ready-to-edit message for each founder.</span></div></li>
+    </ol>
+    <p class="fine">🔒 Your resume is read in this browser and never uploaded.</p>
+  </div>
+</main>
+
+<!-- Results -->
+<div id="app" class="app" hidden>
+  <header class="top">
+    <div class="brand"><span class="mark"></span>Whitespace</div>
+    <div id="profile" class="profile"></div>
+    <button id="replace" class="btn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      <span>Replace resume</span>
+    </button>
+  </header>
+  <div class="cols">
+    <aside class="list-pane">
+      <div class="list-head">
+        <h2>Your top matches <span id="count" class="count"></span></h2>
+        <div id="filters" class="chips" role="group" aria-label="Filter by funding stage"></div>
+      </div>
+      <ol id="list" class="list"></ol>
+    </aside>
+    <section id="detail" class="detail" aria-live="polite"></section>
+  </div>
+</div>
+
+<div id="dragveil" class="dragveil" hidden>Drop to replace your resume</div>
+<div id="busy" class="busy" hidden><span class="spinner"></span>Reading your resume…</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
