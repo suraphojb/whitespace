@@ -36,17 +36,49 @@ function splitBullets(text) {
     .filter(t => t.length >= 35 && t.length <= 320 && !/^(technical )?(skills|languages|interests|tools|certifications)\b/i.test(t));
 }
 
+const SECTION = /^(education|academic\w*|experience|work experience|professional experience|relevant experience|employment( history)?|work history|career history|summary|profile|objective|skills|technical skills|projects|leadership|activities|additional( information)?|certifications|awards|honors|publications|volunteer\w*|interests|languages)\b[\s:&a-z]*$/i;
+const titleCase = t => t.toLowerCase().replace(/(^|[\s(\-'\u2019])([a-z])/g, (m, pre, c) => pre + c.toUpperCase());
+
+/* Years of WORK experience only.
+   1. If the resume states it ("8+ years of experience"), trust the candidate's own number.
+   2. Otherwise add up the date ranges found under work-experience headings. Education ranges are
+      never counted, and overlapping ranges (two roles with the same dates) are counted once. */
 function yearsOfExperience(text) {
+  const stated = text.match(/(\d{1,2})\s*\+?\s*years?['’]?\s+(?:of\s+)?(?:[a-z-]+\s+){0,3}experience/i);
+  if (stated && +stated[1] > 0 && +stated[1] <= 45) return +stated[1];
+
   const now = new Date().getFullYear();
-  const re = /((?:19|20)\d{2})\s*[–—-]\s*(?:[A-Za-z]{3,9}\.?\s*)?((?:19|20)\d{2}|present|current|now)/gi;
-  let total = 0;
-  for (const m of text.matchAll(re)) { // ranges may wrap across lines; skip ones on education lines
-    const lineStart = text.lastIndexOf("\n", m.index) + 1;
-    if (EDU.test(text.slice(lineStart, m.index))) continue;
-    const a = +m[1], b = /^\d/.test(m[2]) ? +m[2] : now;
-    if (b >= a && a > 1980 && b <= now + 1) total += Math.max(b - a, 0.5);
+  // Split into sections by heading.
+  const sections = [{ head: "", body: "" }];
+  for (const raw of text.split(/\n/)) {
+    const line = raw.trim();
+    if (line.length <= 40 && !/\d/.test(line) && SECTION.test(line)) sections.push({ head: line.toLowerCase(), body: "" });
+    else sections[sections.length - 1].body += line + "\n";
   }
-  return Math.min(Math.round(total), 30);
+  const isWork = h => /experience|employment|work|career/.test(h);
+  const isStudy = h => /educat|academic/.test(h);
+  const hasWorkSection = sections.some(x => isWork(x.head));
+
+  const re = /((?:19|20)\d{2})\s*[–—-]\s*(?:[A-Za-z]{3,9}\.?\s*)?((?:19|20)\d{2}|present|current|now)/gi;
+  const spans = [];
+  for (const sec of sections) {
+    if (isStudy(sec.head) || (hasWorkSection && !isWork(sec.head))) continue;
+    for (const m of sec.body.matchAll(re)) { // ranges may wrap across lines
+      const lineStart = sec.body.lastIndexOf("\n", m.index) + 1;
+      if (!hasWorkSection && EDU.test(sec.body.slice(lineStart, m.index))) continue; // no headings: skip school lines
+      const a = +m[1], b = /^\d/.test(m[2]) ? +m[2] : now;
+      if (b >= a && a > 1980 && b <= now + 1) spans.push([a, Math.max(b, a + 0.5)]);
+    }
+  }
+  // Union of the spans, so concurrent roles aren't double-counted.
+  spans.sort((x, y) => x[0] - y[0]);
+  let total = 0, end = -Infinity;
+  for (const [a, b] of spans) {
+    if (b <= end) continue;
+    total += b - Math.max(a, end);
+    end = b;
+  }
+  return Math.min(Math.round(total), 45);
 }
 
 function analyzeResume(text) {
@@ -54,10 +86,17 @@ function analyzeResume(text) {
   const lines = text.split(/\n/).map(s => s.trim()).filter(Boolean);
   const bullets = splitBullets(text);
 
-  const first = lines.find(l => /^[A-Za-z][A-Za-z.'\- ]{3,40}$/.test(l) && l.split(/\s+/).length >= 2 && l.split(/\s+/).length <= 4);
-  const name = first ? first.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()) : null;
-  const schoolLine = lines.find(l => /business school|school of business|school of management|\bmba\b/i.test(l));
-  const school = schoolLine ? (schoolLine.match(/[A-Z][A-Za-z&. ]*(?:Business School|School of Business|School of Management)/) || [schoolLine.split(/[,|–—-]/)[0]])[0].trim().slice(0, 50) : null;
+  // Name: one of the first few lines, 2-5 words, letters only (allowing nicknames in brackets, initials, hyphens).
+  const first = lines.slice(0, 6).find(l => {
+    const words = l.split(/\s+/);
+    return /^[A-Za-zÀ-ɏ][A-Za-zÀ-ɏ.,'’()\- ]{3,48}$/.test(l) && words.length >= 2 && words.length <= 5
+      && !SECTION.test(l) && !/resume|curriculum|vitae/i.test(l);
+  });
+  const name = first ? titleCase(first.replace(/,\s*(mba|cfa|cpa|phd|pmp)\b.*$/i, "")) : null;
+  const schoolMatch = text.match(/[A-Za-z][A-Za-z&. ]*?(?:business school|school of business|school of management)/i);
+  const schoolLine = lines.find(l => /\bmba\b/i.test(l));
+  const rawSchool = schoolMatch ? schoolMatch[0] : schoolLine ? schoolLine.split(/[,|–—-]/)[0] : null;
+  const school = rawSchool ? titleCase(rawSchool.replace(/\d+/g, "").trim()).replace(/\b(Of|And|The)\b/g, w => w.toLowerCase()).slice(0, 50) : null;
 
   const fit = {}, evidence = {};
   for (const [id, r] of Object.entries(ROLES)) {

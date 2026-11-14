@@ -5,7 +5,7 @@
   const KEY = "whitespace.resume.v1";
   const FILTERS = [["all", "All", () => true], ["early", "Seed", s => s.stage <= 1], ["a", "Series A", s => s.stage === 2], ["late", "Series B+", s => s.stage >= 3]];
   const state = { profile: null, matches: [], selected: null, filter: "all", fileName: "" };
-  const initials = name => name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const initials = name => name.replace(/\(.*?\)/g, " ").replace(/[^A-Za-z0-9 ]/g, "").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
   const color = s => MODELS[s.model].color;
   const matchWord = pct => pct >= 70 ? "Great match" : pct >= 55 ? "Good match" : pct >= 40 ? "Worth a look" : "Stretch";
 
