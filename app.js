@@ -4,7 +4,7 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const KEY = "whitespace.resume.v1";
   const FILTERS = [["all", "All", () => true], ["early", "Seed", s => s.stage <= 1], ["a", "Series A", s => s.stage === 2], ["late", "Series B+", s => s.stage >= 3]];
-  const state = { profile: null, matches: [], selected: null, filter: "all", fileName: "" };
+  const state = { profile: null, matches: [], selected: null, filter: "all", sector: "all", fileName: "" };
   const initials = name => name.replace(/\(.*?\)/g, " ").replace(/[^A-Za-z0-9 ]/g, "").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
   const color = s => MODELS[s.model].color;
   const matchWord = pct => pct >= 70 ? "Great match" : pct >= 55 ? "Good match" : pct >= 40 ? "Worth a look" : "Stretch";
@@ -93,10 +93,11 @@
   }
 
   function renderFilters() {
+    $("sector").innerHTML = `<option value="all">All sectors</option>` + Object.keys(MODELS).map(k => `<option value="${esc(k)}"${state.sector === k ? " selected" : ""}>${esc(k)}</option>`).join("");
     $("filters").innerHTML = FILTERS.map(([id, label]) => `<button type="button" class="chip${state.filter === id ? " on" : ""}" data-filter="${id}" aria-pressed="${state.filter === id}">${label}</button>`).join("");
   }
 
-  const visible = () => state.matches.filter(m => FILTERS.find(f => f[0] === state.filter)[2](m.startup));
+  const visible = () => state.matches.filter(m => FILTERS.find(f => f[0] === state.filter)[2](m.startup) && (state.sector === "all" || m.startup.model === state.sector));
 
   function renderList() {
     const rows = visible();
@@ -110,7 +111,7 @@
           <span class="sub"><i class="dot"></i>${esc(s.model)} · ${STAGES[s.stage]}</span>
           <span class="need">${esc(roleTitle(m.role.id, s.stage))}</span>
         </span></button></li>`;
-    }).join("") || `<li class="empty">No startups at this stage.</li>`;
+    }).join("") || `<li class="empty">No startups match these filters.</li>`;
   }
 
   function renderDetail() {
@@ -209,7 +210,7 @@
 
   function select(id) {
     state.selected = id;
-    if (!visible().some(m => m.startup.id === id)) { state.filter = "all"; renderFilters(); }
+    if (!visible().some(m => m.startup.id === id)) { state.filter = "all"; state.sector = "all"; renderFilters(); }
     renderList(); renderDetail();
     document.body.classList.add("show-detail");
     const row = document.querySelector(".row.on");
@@ -223,6 +224,7 @@
   $("pasteToggle").onclick = () => { $("pasteForm").hidden = !$("pasteForm").hidden; if (!$("pasteForm").hidden) $("pasteText").focus(); };
   $("pasteForm").onsubmit = e => { e.preventDefault(); try { useText($("pasteText").value, "pasted text"); } catch (err) { fail(err.message); } };
   $("filters").onclick = e => { const b = e.target.closest("[data-filter]"); if (b) { state.filter = b.dataset.filter; renderFilters(); renderList(); } };
+  $("sector").onchange = e => { state.sector = e.target.value; renderList(); };
   $("list").onclick = e => { const b = e.target.closest("[data-id]"); if (b) select(b.dataset.id); };
   $("detail").onclick = e => {
     const peer = e.target.closest("[data-id]");

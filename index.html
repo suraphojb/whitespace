@@ -59,7 +59,10 @@
     <aside class="list-pane">
       <div class="list-head">
         <h2>Your top matches <span id="count" class="count"></span></h2>
-        <div id="filters" class="chips" role="group" aria-label="Filter by funding stage"></div>
+        <div class="filter-row">
+          <div id="filters" class="chips" role="group" aria-label="Filter by funding stage"></div>
+          <select id="sector" class="sector-select" aria-label="Filter by sector"></select>
+        </div>
       </div>
       <ol id="list" class="list"></ol>
     </aside>
