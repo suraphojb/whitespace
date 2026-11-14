@@ -100,6 +100,7 @@ a { color: var(--accent); font-weight: 600; text-underline-offset: 3px; }
 .score { flex: none; font-size: 12.5px; font-weight: 800; padding: 2px 9px; border-radius: 99px; background: var(--grad); color: #fff; font-variant-numeric: tabular-nums; }
 .sub { color: var(--muted); font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex: none; }
+.need.open, .badge.open { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, var(--surface)); }
 .need { align-self: flex-start; margin-top: 5px; font-size: 12.5px; font-weight: 700; color: var(--gap); background: var(--gap-soft); padding: 3px 10px; border-radius: 8px; }
 
 /* ── Detail ── */

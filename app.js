@@ -111,7 +111,7 @@
         <span class="row-main">
           <span class="row-top"><strong>${esc(s.name)} ${backerBadges(s)}</strong><span class="score">${m.pct}%</span></span>
           <span class="sub"><i class="dot"></i>${esc(s.model)} · ${STAGES[s.stage]}</span>
-          <span class="need">${esc(roleTitle(m.role.id, s.stage))}</span>
+          <span class="need${m.role.signal && m.role.signal.posted ? " open" : ""}">${esc(roleTitle(m.role.id, s.stage))}${m.role.signal && m.role.signal.posted ? " · hiring" : ""}</span>
         </span></button></li>`;
     }).join("") || `<li class="empty">No startups match these filters.</li>`;
   }
@@ -158,18 +158,18 @@
       ${s.unsure.length ? `<div class="headsup"><strong>Heads-up</strong><ul>${s.unsure.map(u => `<li>${esc(u)}</li>`).join("")}</ul></div>` : ""}
 
       <section class="card gap">
-        <div class="eyebrow"><span>🎯 The role they're probably missing</span><span class="badge">Not posted · our inference</span></div>
+        <div class="eyebrow"><span>🎯 ${pitch.posted ? "A role they're hiring for" : "The role they're probably missing"}</span><span class="badge${pitch.posted ? " open" : ""}">${pitch.posted ? "Listed · seen on a job board" : "Not posted · our inference"}</span></div>
         <h2>${esc(pitch.title)}</h2>
         <p>${esc(pitch.why)}</p>
         <div class="evidence">
           <div class="ev">
             <div class="ev-num">${Math.round(100 * g.benchmark)}%</div>
-            <div><strong>Stage benchmark</strong><br>${esc(pitch.benchLine.charAt(0).toUpperCase() + pitch.benchLine.slice(1))}. We found no public one at ${esc(s.name)}.</div>
+            <div><strong>Stage benchmark</strong><br>${esc(pitch.benchLine.charAt(0).toUpperCase() + pitch.benchLine.slice(1))}. ${pitch.posted ? `${esc(s.name)} is hiring for it now.` : `We found no public one at ${esc(s.name)}.`}</div>
           </div>
-          ${g.signal ? `<div class="ev"><div class="ev-num sig">↗</div><div><strong>Real signal</strong><br>${esc(g.signal.text)}</div></div>` : ""}
+          ${g.signal ? `<div class="ev"><div class="ev-num sig">↗</div><div><strong>${pitch.posted ? "Job listing" : "Real signal"}</strong><br>${esc(g.signal.text)}</div></div>` : ""}
         </div>
         <div class="actions">
-          <a class="btn" href="${esc(verifyUrl(s, g.id))}" target="_blank" rel="noopener">Check on LinkedIn that it's open ↗</a>
+          <a class="btn" href="${esc(verifyUrl(s, g.id))}" target="_blank" rel="noopener">${pitch.posted ? "See who's already on the team ↗" : "Check on LinkedIn that it's open ↗"}</a>
           <span class="conf">${esc(confidence(g))}</span>
         </div>
         ${m.alternates.length ? `<p class="alts">Other gaps you could pitch: ${m.alternates.map(a => `<span>${esc(roleTitle(a.id, s.stage))}</span>`).join("")}</p>` : ""}
@@ -202,7 +202,7 @@
           <tbody>${m.coverage.filter(c => c.benchmark >= 0.15 || c.has || c.signal).sort((a, b) => b.benchmark - a.benchmark).map(c => `<tr class="${c.has ? "" : c.id === g.id ? "pick" : c.strength >= 0.5 ? "miss" : "later"}">
             <td>${esc(ROLES[c.id].label)}</td>
             <td><span class="bar"><i style="width:${Math.round(100 * c.benchmark)}%"></i></span><span class="pc">${Math.round(100 * c.benchmark)}%</span></td>
-            <td>${c.has ? "Owner named publicly" : c.id === g.id ? "Your pitch" : c.strength >= 0.5 ? "No public owner found" : "Not yet typical"}</td></tr>`).join("")}</tbody>
+            <td>${c.has ? "Owner named publicly" : c.id === g.id ? (pitch.posted ? "Hiring now" : "Your pitch") : c.strength >= 0.5 ? "No public owner found" : "Not yet typical"}</td></tr>`).join("")}</tbody>
         </table>
         ${g.peers.length ? `<p class="peers">Similar startups to compare: ${g.peers.map(x => `<button type="button" class="peer" data-id="${x.id}">${esc(x.name)}</button>`).join("")}</p>` : ""}
         <p class="fine">Benchmarks are our playbook estimates of how many startups have each function by a given stage, adjusted for headcount where known. Startup team rosters aren't public, so every gap is a hypothesis: confirm it before you pitch.</p>

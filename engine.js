@@ -187,14 +187,17 @@ function buildPitch(m, p) {
   const fill = t => t.replace(/\{ceo\}/g, ceoFirst).replace(/\{co\}/g, s.name);
   const ev = p.evidence[g.id];
   const pct = Math.round(100 * g.benchmark);
+  const posted = !!(g.signal && g.signal.posted);
 
   const benchLine = `about ${pct}% of startups have a dedicated ${fn} owner by ${STAGES[s.stage]}`;
   const fitWord = g.fit >= 0.7 ? "strong" : g.fit >= 0.45 ? "solid" : "partial";
   const sectorKnown = m.sectorFit >= 0.45;
 
-  const summary = `${s.name} is at ${STAGES[s.stage]} (${s.round.replace(" · ", ", ")}) and we found no public ${fn} owner, while ${benchLine}.` +
-    (g.signal ? ` ${g.signal.text}` : "") +
-    ` Your resume shows ${fitWord} ${fn} evidence${sectorKnown ? ` and real ${s.model.toLowerCase()} exposure` : ""}. Don't apply for a job — propose one: the ${title} role and what it delivers in 90 days.`;
+  const summary = posted
+    ? `${s.name} is at ${STAGES[s.stage]} (${s.round.replace(" · ", ", ")}) and is hiring in ${fn}. ${g.signal.text} Your resume shows ${fitWord} ${fn} evidence${sectorKnown ? ` and real ${s.model.toLowerCase()} exposure` : ""}. Apply through the listing, and also write to the CEO directly with what you would deliver in 90 days \u2014 at this size the founder usually makes the call.`
+    : `${s.name} is at ${STAGES[s.stage]} (${s.round.replace(" · ", ", ")}) and we found no public ${fn} owner, while ${benchLine}.` +
+      (g.signal ? ` ${g.signal.text}` : "") +
+      ` Your resume shows ${fitWord} ${fn} evidence${sectorKnown ? ` and real ${s.model.toLowerCase()} exposure` : ""}. Don't apply for a job \u2014 propose one: the ${title} role and what it delivers in 90 days.`;
 
   const lead = [];
   ev.forEach(t => lead.push({ kind: "Proof point", text: `“${t}”` }));
@@ -209,7 +212,9 @@ function buildPitch(m, p) {
       ? "Emphasise zero-to-one building: first process, first playbook, first hire in the function."
       : "Emphasise scale and rigour: they have momentum and need structure that survives a doubling of headcount." });
 
-  const watch = [`Check first that the role really is open: search LinkedIn for a ${fn} lead at ${s.name}. If one exists, pitch the next gap instead.`];
+  const watch = [posted
+    ? `Find the listing on ${s.name}'s careers page and check it is still open, then apply there as well as writing to the CEO. The posted title may differ from the one shown here.`
+    : `Check first that the role really is open: search LinkedIn for a ${fn} lead at ${s.name}. If one exists, pitch the next gap instead.`];
   role._musts.filter(x => !x.re.test(p.lower)).forEach(x => watch.push(`Your resume doesn't show ${x.label}. Expect the question and have an example ready.`));
   if (p.years && p.years < 3 && s.stage >= 3) watch.push("With under three years of experience, a later-stage company may scope this as a senior-manager role rather than a head-of role. Be flexible on title.");
 
@@ -217,12 +222,12 @@ function buildPitch(m, p) {
   const exp = p.years ? ` with ${p.years} years in ${p.strengths.slice(0, 2).map(k => SHORT[k]).join(" and ") || "operating roles"}` : "";
   const opener = `Hi ${ceoKnown ? ceoFirst : "[name]"},\n\n` +
     `I'm ${who}${exp}.` + (/^YC /.test(s.round) ? "" : ` Congratulations on the ${s.round.split(" · ")[0].replace(/^\S+\s/, "")}${/Seed$/.test(s.round.split(" · ")[0]) ? " round" : ""}.`) +
-    (g.signal ? ` I noticed ${g.signal.you}, and from the outside I couldn't find anyone owning ${fn} yet.` : ` From the outside I couldn't find anyone owning ${fn} at ${s.name} yet.`) + `\n\n` +
+    (posted ? ` I saw that ${g.signal.you}, and I'd like to be considered.` : g.signal ? ` I noticed ${g.signal.you}, and from the outside I couldn't find anyone owning ${fn} yet.` : ` From the outside I couldn't find anyone owning ${fn} at ${s.name} yet.`) + `\n\n` +
     (ev[0] ? `The closest thing I've done: ${lowerFirst(ev[0]).replace(/\.$/, "")}.\n\n` : "") +
-    `I've sketched a one-page 90-day plan for what a ${title.split(" / ")[0]} could own at ${s.name}. Could I send it over, or walk you through it in 20 minutes?\n\n` +
+    (posted ? `I've sketched a one-page 90-day plan for the role. Could I send it over, or walk you through it in 20 minutes?\n\n` : `I've sketched a one-page 90-day plan for what a ${title.split(" / ")[0]} could own at ${s.name}. Could I send it over, or walk you through it in 20 minutes?\n\n`) +
     `${p.name || "[Your name]"}`;
 
-  return { title, summary, lead, plan: role.plan, watch, opener, why: role.why, benchLine, ceoName, ceoKnown };
+  return { title, posted, summary, lead, plan: role.plan, watch, opener, why: role.why, benchLine, ceoName, ceoKnown };
 }
 
 if (typeof module !== "undefined") module.exports = { analyzeResume, rankStartups, buildPitch, gapAnalysis };
