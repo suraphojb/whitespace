@@ -4,7 +4,9 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const KEY = "whitespace.resume.v1";
   const FILTERS = [["all", "All", () => true], ["early", "Seed", s => s.stage <= 1], ["a", "Series A", s => s.stage === 2], ["late", "Series B+", s => s.stage >= 3]];
-  const state = { profile: null, matches: [], selected: null, filter: "all", sector: "all", fileName: "" };
+  const state = { profile: null, matches: [], selected: null, filter: "all", sector: "all", backer: "all", fileName: "" };
+  const backers = s => s.backers || [];
+  const backerBadges = s => backers(s).map(b => `<span class="bk ${b === "a16z" ? "a16z" : "yc"}" title="Backed by ${esc(b)}">${b === "a16z" ? "a16z" : "YC"}</span>`).join("");
   const initials = name => name.replace(/\(.*?\)/g, " ").replace(/[^A-Za-z0-9 ]/g, "").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
   const color = s => MODELS[s.model].color;
   const matchWord = pct => pct >= 70 ? "Great match" : pct >= 55 ? "Good match" : pct >= 40 ? "Worth a look" : "Stretch";
@@ -97,7 +99,7 @@
     $("filters").innerHTML = FILTERS.map(([id, label]) => `<button type="button" class="chip${state.filter === id ? " on" : ""}" data-filter="${id}" aria-pressed="${state.filter === id}">${label}</button>`).join("");
   }
 
-  const visible = () => state.matches.filter(m => FILTERS.find(f => f[0] === state.filter)[2](m.startup) && (state.sector === "all" || m.startup.model === state.sector));
+  const visible = () => state.matches.filter(m => FILTERS.find(f => f[0] === state.filter)[2](m.startup) && (state.sector === "all" || m.startup.model === state.sector) && (state.backer === "all" || backers(m.startup).includes(state.backer)));
 
   function renderList() {
     const rows = visible();
@@ -107,7 +109,7 @@
       return `<li><button type="button" class="row${s.id === state.selected ? " on" : ""}" data-id="${s.id}" style="--c:${color(s)}">
         <span class="logo">${esc(initials(s.name))}</span>
         <span class="row-main">
-          <span class="row-top"><strong>${esc(s.name)}</strong><span class="score">${m.pct}%</span></span>
+          <span class="row-top"><strong>${esc(s.name)} ${backerBadges(s)}</strong><span class="score">${m.pct}%</span></span>
           <span class="sub"><i class="dot"></i>${esc(s.model)} · ${STAGES[s.stage]}</span>
           <span class="need">${esc(roleTitle(m.role.id, s.stage))}</span>
         </span></button></li>`;
@@ -133,7 +135,7 @@
       <div class="hero">
         <span class="logo xl">${esc(initials(s.name))}</span>
         <div class="hero-main">
-          <div class="hero-tags"><span class="sector">${esc(s.model)}</span><span class="stagepill">${STAGES[s.stage]}</span></div>
+          <div class="hero-tags"><span class="sector">${esc(s.model)}</span><span class="stagepill">${STAGES[s.stage]}</span>${backers(s).map(b => `<span class="stagepill">Backed by ${esc(b)}</span>`).join("")}</div>
           <h1>${esc(s.name)}</h1>
           <p class="blurb">${esc(s.blurb)}</p>
           ${s.web ? `<a class="site" href="${esc(s.web)}" target="_blank" rel="noopener">${esc(s.web.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))} ↗</a>` : ""}
@@ -152,7 +154,7 @@
         ${fact("CEO", s.ceo)}
         ${fact("Founded", s.founded)}
       </dl>
-      <p class="source">Facts from press coverage, checked ${AS_OF}. <a href="${esc(s.src)}" target="_blank" rel="noopener">Read the source ↗</a></p>
+      <p class="source">Facts from press coverage and public directories, checked ${AS_OF}. <a href="${esc(s.src)}" target="_blank" rel="noopener">Read the source ↗</a></p>
       ${s.unsure.length ? `<div class="headsup"><strong>Heads-up</strong><ul>${s.unsure.map(u => `<li>${esc(u)}</li>`).join("")}</ul></div>` : ""}
 
       <section class="card gap">
@@ -210,7 +212,7 @@
 
   function select(id) {
     state.selected = id;
-    if (!visible().some(m => m.startup.id === id)) { state.filter = "all"; state.sector = "all"; renderFilters(); }
+    if (!visible().some(m => m.startup.id === id)) { state.filter = "all"; state.sector = "all"; state.backer = "all"; $("backer").value = "all"; renderFilters(); }
     renderList(); renderDetail();
     document.body.classList.add("show-detail");
     const row = document.querySelector(".row.on");
@@ -225,6 +227,7 @@
   $("pasteForm").onsubmit = e => { e.preventDefault(); try { useText($("pasteText").value, "pasted text"); } catch (err) { fail(err.message); } };
   $("filters").onclick = e => { const b = e.target.closest("[data-filter]"); if (b) { state.filter = b.dataset.filter; renderFilters(); renderList(); } };
   $("sector").onchange = e => { state.sector = e.target.value; renderList(); };
+  $("backer").onchange = e => { state.backer = e.target.value; renderList(); };
   $("list").onclick = e => { const b = e.target.closest("[data-id]"); if (b) select(b.dataset.id); };
   $("detail").onclick = e => {
     const peer = e.target.closest("[data-id]");

@@ -216,7 +216,7 @@ function buildPitch(m, p) {
   const who = p.school ? `an MBA candidate at ${p.school}` : "an MBA candidate";
   const exp = p.years ? ` with ${p.years} years in ${p.strengths.slice(0, 2).map(k => SHORT[k]).join(" and ") || "operating roles"}` : "";
   const opener = `Hi ${ceoKnown ? ceoFirst : "[name]"},\n\n` +
-    `I'm ${who}${exp}. Congratulations on the ${s.round.split(" · ")[0].replace(/^\S+\s/, "")}.` +
+    `I'm ${who}${exp}.` + (/^YC /.test(s.round) ? "" : ` Congratulations on the ${s.round.split(" · ")[0].replace(/^\S+\s/, "")}${/Seed$/.test(s.round.split(" · ")[0]) ? " round" : ""}.`) +
     (g.signal ? ` I noticed ${g.signal.you}, and from the outside I couldn't find anyone owning ${fn} yet.` : ` From the outside I couldn't find anyone owning ${fn} at ${s.name} yet.`) + `\n\n` +
     (ev[0] ? `The closest thing I've done: ${lowerFirst(ev[0]).replace(/\.$/, "")}.\n\n` : "") +
     `I've sketched a one-page 90-day plan for what a ${title.split(" / ")[0]} could own at ${s.name}. Could I send it over, or walk you through it in 20 minutes?\n\n` +
